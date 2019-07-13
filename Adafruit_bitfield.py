@@ -13,7 +13,8 @@ class Adafruit_bitfield(object):
         fullreg = 0
         pos = 0
         for key, value in self._structure.items():
-            fullreg = fullreg | ((getattr(self, key) & (2 ** value - 1)) << pos)
+            fullreg = fullreg | (
+                (getattr(self, key) & (2 ** value - 1)) << pos)
             pos = pos + value
 
         return fullreg

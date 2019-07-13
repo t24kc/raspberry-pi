@@ -15,9 +15,7 @@ except Exception:
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(7, GPIO.OUT)
-GPIO.output(7,False)
+GPIO.output(7, False)
 time.sleep(pump_time)
-GPIO.output(7,GPIO.OUT)
+GPIO.output(7, GPIO.OUT)
 GPIO.cleanup()
-
-

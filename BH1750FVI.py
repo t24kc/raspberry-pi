@@ -52,7 +52,7 @@ def convertToNumber(data):
     # into a decimal number. Optional parameter 'decimals'
     # will round to specified number of decimal places.
     result = (data[1] + (256 * data[0])) / 1.2
-    return (result)
+    return result
 
 
 def readLight(addr=DEVICE):
@@ -64,7 +64,7 @@ def readLight(addr=DEVICE):
 def main():
     while True:
         lightLevel = readLight()
-        print("Light Level : " + format(lightLevel, '.2f') + " lx")
+        print("Light Level : " + format(lightLevel, ".2f") + " lx")
         time.sleep(0.5)
 
 
