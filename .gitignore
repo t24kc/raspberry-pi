@@ -1,0 +1,7 @@
+.idea
+.ipynb_checkpoints
+.python-version
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
