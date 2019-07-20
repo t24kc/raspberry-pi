@@ -1,0 +1,5 @@
+smbus
+rpi.gpio
+spidev
+gspread
+schedule
