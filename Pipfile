@@ -11,6 +11,7 @@ spidev = "*"
 gspread = "*"
 schedule = "*"
 "RPi.GPIO" = "*"
+oauth2client = "*"
 
 [requires]
 python_version = "3.6"

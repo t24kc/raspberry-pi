@@ -2,4 +2,5 @@ smbus
 rpi.gpio
 spidev
 gspread
+oauth2client
 schedule
