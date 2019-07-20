@@ -61,7 +61,7 @@ def main():
     sensor = SHT31()
     while True:
         temperature, humidity = sensor.get_temperature_humidity()
-        print("Temperature: {} C, humidity: {} %".format(temperature, humidity))
+        print("Temperature: {} C, Humidity: {} %".format(temperature, humidity))
         sleep(args.interval)
 
 

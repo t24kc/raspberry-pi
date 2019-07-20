@@ -39,7 +39,7 @@ def main():
         help="set service account key path (default {})".format(DEFAULT_KEY_PATH),
     )
     parser.add_argument(
-        "-i",
+        "-s",
         "--spread-sheet-id",
         type=str,
         default=DEFAULT_SHEET_ID,
@@ -57,7 +57,7 @@ def main():
         "--input-text",
         type=int,
         default=default_input_text,
-        help="set script interval seconds (default {} seconds)".format(
+        help="set script interval seconds (default {})".format(
             default_input_text
         ),
     )

@@ -34,7 +34,7 @@ Create a GoogleSpreadSheet and from "Share" add the edit permission of the servi
 ## Write Google Spread Sheet
 ```zsh
 $ python spread_sheet.py --help
-usage: spread_sheet.py [-h] [-k KEY_PATH] [-i SPREAD_SHEET_ID] [-l LABEL]
+usage: spread_sheet.py [-h] [-k KEY_PATH] [-s SPREAD_SHEET_ID] [-l LABEL]
                        [-t INPUT_TEXT]
 
 Google Spread Sheet Script
@@ -44,12 +44,12 @@ optional arguments:
   -k KEY_PATH, --key-path KEY_PATH
                         set service account key path (default
                         ../.gcp/key.json)
-  -i SPREAD_SHEET_ID, --spread-sheet-id SPREAD_SHEET_ID
+  -s SPREAD_SHEET_ID, --spread-sheet-id SPREAD_SHEET_ID
                         set spread sheet id
   -l LABEL, --label LABEL
                         set spread sheet cell label (default A1)
   -t INPUT_TEXT, --input-text INPUT_TEXT
-                        set script interval seconds (default 100 seconds)
+                        set script interval seconds (default 100)
 
 
 # Pass SPREAD_SHEET_ID in command line argument
