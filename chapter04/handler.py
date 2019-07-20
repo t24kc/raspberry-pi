@@ -31,7 +31,9 @@ class Scheduler(object):
         light = self._bh1750fvi_sensor.get_light()
         temperature, humidity = self._sht31_sensor.get_temperature_humidity()
 
-        self._spread_sheet.append_row([current_datetime, co2, tvoc, distance, light, temperature, humidity])
+        values = [current_datetime, co2, tvoc, distance, light, temperature, humidity]
+        print(values)
+        self._spread_sheet.append_row(values)
 
 
 def main():
