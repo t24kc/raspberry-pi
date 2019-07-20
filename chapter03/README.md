@@ -53,7 +53,7 @@ optional arguments:
 
 
 # Pass SPREAD_SHEET_ID in command line argument
-$ python spread_sheet.py -i SPREAD_SHEET_ID -t 1234
+$ python spread_sheet.py -s SPREAD_SHEET_ID -t 1234
 # or update DEFAULT_SHEET_ID
 $ python spread_sheet.py -t 1234
 ```
