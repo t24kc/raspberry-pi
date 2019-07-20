@@ -1,7 +1,8 @@
 # chapter02
+Let's start the relay module (switch function).
 
-
-# xx
+# Run
+## Relay Module
 ```zsh
 $ python relay_module.py --help
 usage: relay_module.py [-h] [-c CHANNEL] [-w WAIT_TIME] [-i INTERVAL]
