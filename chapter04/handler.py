@@ -7,7 +7,7 @@ from sensor.VL6180 import VL6180X
 import argparse
 import schedule
 
-DEFAULT_KEY_PATH = "../.gcp/key.json"
+DEFAULT_KEY_PATH = "key.json"
 DEFAULT_SHEET_ID = "dummy"
 DEFAULT_COLUMNS = ["Time", "Distance", "Temperature", "Humidity"]
 DEFAULT_INTERVAL_TIME = 600

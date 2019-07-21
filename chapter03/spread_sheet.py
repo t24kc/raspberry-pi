@@ -7,7 +7,7 @@ SCOPE = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-DEFAULT_KEY_PATH = "../.gcp/key.json"
+DEFAULT_KEY_PATH = "key.json"
 DEFAULT_SHEET_ID = "dummy"
 DEFAULT_SHEET_INDEX = 0
 
