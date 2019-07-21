@@ -6,7 +6,7 @@ Let's carry out watering when the water depth falls below a certain value.
 ```zsh
 $ python handler.py --help
 usage: handler.py [-h] [-k KEY_PATH] [-s SPREAD_SHEET_ID] [-i INTERVAL]
-                  [-w WET_LOWER_LIMIT] [-t WATER_TURN_ON_TIME]
+                  [-d DISTANCE_LIMIT] [-t WATER_TURN_ON_TIME]
 
 Google Spread Sheet Script
 
@@ -19,8 +19,8 @@ optional arguments:
                         set spread sheet id
   -i INTERVAL, --interval INTERVAL
                         set script interval seconds (default 600 seconds)
-  -w WET_LOWER_LIMIT, --wet-lower-limit WET_LOWER_LIMIT
-                        set wet lower limit (default 450 mm)
+  -d DISTANCE_LIMIT, --distance-limit DISTANCE_LIMIT
+                        set distance limit (default 50 mm)
   -t WATER_TURN_ON_TIME, --water-turn-on-time WATER_TURN_ON_TIME
                         set water turn on time (default 30 seconds)
 

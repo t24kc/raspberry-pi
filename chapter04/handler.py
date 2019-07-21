@@ -10,7 +10,8 @@ import schedule
 
 DEFAULT_KEY_PATH = "../.gcp/key.json"
 DEFAULT_SHEET_ID = "dummy"
-DEFAULT_COLUMNS = ["Time", "CO2", "TVOC", "Distance", "Light", "Temperature", "Humidity"]
+# DEFAULT_COLUMNS = ["Time", "CO2", "TVOC", "Distance", "Light", "Temperature", "Humidity"]
+DEFAULT_COLUMNS = ["Time", "Distance", "Light", "Temperature", "Humidity"]
 DEFAULT_INTERVAL_TIME = 600
 
 
@@ -24,14 +25,15 @@ class Scheduler(object):
 
     def job(self):
         current_datetime = datetime.now()
-        self._ccs811_sensor.read_data()
-        co2 = self._ccs811_sensor.get_eco2()
-        tvoc = self._ccs811_sensor.get_tvoc()
+        # self._ccs811_sensor.read_data()
+        # co2 = self._ccs811_sensor.get_eco2()
+        # tvoc = self._ccs811_sensor.get_tvoc()
         distance = self._vl6180x_sensor.get_distance()
-        light = self._bh1750fvi_sensor.get_light()
+        # light = self._bh1750fvi_sensor.get_light()
         temperature, humidity = self._sht31_sensor.get_temperature_humidity()
 
-        values = [current_datetime, co2, tvoc, distance, light, temperature, humidity]
+        # values = [current_datetime, co2, tvoc, distance, light, temperature, humidity]
+        values = [current_datetime, distance, temperature, humidity]
         print(values)
         self._spread_sheet.append_row(values)
 

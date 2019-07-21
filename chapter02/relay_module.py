@@ -14,9 +14,9 @@ def init():
 
 def power_on(channel, interval):
     GPIO.setup(channel, GPIO.OUT)
-    GPIO.output(channel, 1)
-    sleep(interval)
     GPIO.output(channel, 0)
+    sleep(interval)
+    GPIO.output(channel, 1)
     GPIO.cleanup()
 
 
