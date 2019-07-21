@@ -66,7 +66,9 @@ class BH1750FVI(object):
 
 def main():
     parser = argparse.ArgumentParser(description="Digital Light Sensor Script")
-    parser.add_argument("-i", "--interval", type=int, default=10, help="set script interval seconds")
+    parser.add_argument(
+        "-i", "--interval", type=int, default=10, help="set script interval seconds"
+    )
     args = parser.parse_args()
 
     sensor = BH1750FVI()

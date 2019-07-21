@@ -14,7 +14,8 @@ class SpreadSheet(object):
         credentials = ServiceAccountCredentials.from_json_keyfile_name(
             key_path, SCOPE)
 
-        self._sheet_client = gspread.authorize(credentials).open_by_key(spread_sheet_id)
+        self._sheet_client = gspread.authorize(
+            credentials).open_by_key(spread_sheet_id)
 
     def get_label_value(self, label, index=DEFAULT_SHEET_INDEX):
         return self._sheet_client.get_worksheet(index).acell(label).value

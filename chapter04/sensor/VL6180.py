@@ -84,9 +84,9 @@ class VL6180X(object):
         # Sysrange early convergence estimate
         self.write_byte16(0x0022, 0x7B)
         # Sysals integration period
-        self.write_byte16(0x0040, 0x64) # 100ms
+        self.write_byte16(0x0040, 0x64)  # 100ms
         # sysals analogue gain
-        self.write_byte(0x3F, 0x20) # x40
+        self.write_byte(0x3F, 0x20)  # x40
         # firmware result scaler
         self.write_byte(0x0120, 0x01)
 
@@ -140,8 +140,11 @@ class VL6180X(object):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Infrared Distance Sensor Script")
-    parser.add_argument("-i", "--interval", type=int, default=10, help="set script interval seconds")
+    parser = argparse.ArgumentParser(
+        description="Infrared Distance Sensor Script")
+    parser.add_argument(
+        "-i", "--interval", type=int, default=10, help="set script interval seconds"
+    )
     args = parser.parse_args()
 
     sensor = VL6180X()

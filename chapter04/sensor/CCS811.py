@@ -143,8 +143,7 @@ class CCS811(object):
         self._bus.write_byte_data(self._address, register, value)
 
     def read_list(self, register, length):
-        return self._bus.read_i2c_block_data(
-            self._address, register, length)
+        return self._bus.read_i2c_block_data(self._address, register, length)
 
     def write_list(self, register, data):
         self._bus.write_i2c_block_data(self._address, register, data)
@@ -175,13 +174,16 @@ class Bitfield(object):
 
 def main():
     parser = argparse.ArgumentParser(description="CO2 and TVOC Sensor Script")
-    parser.add_argument("-i", "--interval", type=int, default=10, help="set script interval seconds")
+    parser.add_argument(
+        "-i", "--interval", type=int, default=10, help="set script interval seconds"
+    )
     args = parser.parse_args()
 
     sensor = CCS811()
     while True:
         if not sensor.read_data():
-            print("CO2: {} ppm, TVOC: {}".format(sensor.get_eco2(), sensor.get_tvoc()))
+            print("CO2: {} ppm, TVOC: {}".format(
+                sensor.get_eco2(), sensor.get_tvoc()))
         else:
             print("Error!")
         sleep(args.interval)
