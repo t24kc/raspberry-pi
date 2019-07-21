@@ -53,7 +53,7 @@ class BH1750FVI(object):
         return self.convert_to_number(light)
 
     def read(self, register):
-        return self._bus.read_byte_data(self._address, register) & 0xFF
+        return self._bus.read_i2c_block_data(self._address, register)
 
     def write(self, register):
         self._bus.write_byte(self._address, register)

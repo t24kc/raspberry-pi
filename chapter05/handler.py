@@ -2,6 +2,7 @@ from datetime import datetime
 from time import sleep
 from lib.spread_sheet import SpreadSheet
 from sensor.SHT31 import SHT31
+from sensor.BH1750FVI import BH1750FVI
 from sensor.VL6180 import VL6180X
 from sensor.MCP300X import MCP300X
 
@@ -10,7 +11,7 @@ import schedule
 
 DEFAULT_KEY_PATH = "key.json"
 DEFAULT_SHEET_ID = "dummy"
-DEFAULT_COLUMNS = ["Time", "Distance", "Temperature", "Humidity", "WaterFlag"]
+DEFAULT_COLUMNS = ["Time", "Distance", "Light", "Temperature", "Humidity", "WaterFlag"]
 DEFAULT_INTERVAL_TIME = 600
 DEFAULT_DISTANCE_LIMIT = 50
 DEFAULT_WATER_TURN_ON_TIME = 30
@@ -21,6 +22,7 @@ class Scheduler(object):
         self._spread_sheet = spread_sheet
 
         self._vl6180x_sensor = VL6180X()
+        self._bh1750fvi_sensor = BH1750FVI()
         self._sht31_sensor = SHT31()
         self._mcp300x = MCP300X()
 
@@ -30,10 +32,18 @@ class Scheduler(object):
     def logging_job(self):
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         distance = self._vl6180x_sensor.get_distance()
+        light = self._bh1750fvi_sensor.get_light()
         temperature, humidity = self._sht31_sensor.get_temperature_humidity()
         water_flag = 1 if self.is_water_flag(distance) else 0
 
-        values = [current_datetime, round(distance, 1), round(temperature, 1), round(humidity, 1), water_flag]
+        values = [
+            current_datetime,
+            round(distance, 1),
+            round(light, 1),
+            round(temperature, 1),
+            round(humidity, 1),
+            water_flag
+        ]
         print(values)
         self._spread_sheet.append_row(values)
 
