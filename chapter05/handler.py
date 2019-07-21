@@ -1,10 +1,11 @@
 from datetime import datetime
+from time import sleep
 from lib.spread_sheet import SpreadSheet
-from sensor.BH1750FVI import BH1750FVI
-from sensor.CCS811 import CCS811
+# from sensor.BH1750FVI import BH1750FVI
+# from sensor.CCS811 import CCS811
 from sensor.SHT31 import SHT31
 from sensor.VL6180 import VL6180X
-# from sensor.MCP300X import MCP300X
+from sensor.MCP300X import MCP300X
 
 import argparse
 import schedule
@@ -12,7 +13,7 @@ import schedule
 DEFAULT_KEY_PATH = "../.gcp/key.json"
 DEFAULT_SHEET_ID = "dummy"
 # DEFAULT_COLUMNS = ["Time", "CO2", "TVOC", "Distance", "Light", "Temperature", "Humidity", "Wet"]
-DEFAULT_COLUMNS = ["Time", "Distance", "Light", "Temperature", "Humidity"]
+DEFAULT_COLUMNS = ["Time", "Distance", "Temperature", "Humidity"]
 DEFAULT_INTERVAL_TIME = 600
 DEFAULT_DISTANCE_LIMIT = 50
 DEFAULT_WATER_TURN_ON_TIME = 30
@@ -22,9 +23,9 @@ class Scheduler(object):
     def __init__(self, spread_sheet, distance_limit, water_turn_on_time):
         self._spread_sheet = spread_sheet
 
-        self._ccs811_sensor = CCS811()
+        # self._ccs811_sensor = CCS811()
         self._vl6180x_sensor = VL6180X()
-        self._bh1750fvi_sensor = BH1750FVI()
+        # self._bh1750fvi_sensor = BH1750FVI()
         self._sht31_sensor = SHT31()
         self._mcp300x = MCP300X()
 
@@ -33,7 +34,7 @@ class Scheduler(object):
 
     def logging_job(self):
         current_datetime = datetime.now()
-        self._ccs811_sensor.read_data()
+        # self._ccs811_sensor.read_data()
         # co2 = self._ccs811_sensor.get_eco2()
         # tvoc = self._ccs811_sensor.get_tvoc()
         distance = self._vl6180x_sensor.get_distance()
@@ -103,6 +104,10 @@ def main():
     scheduler = Scheduler(spread_sheet, args.distance_limit, args.water_turn_on_time)
     schedule.every(args.interval).seconds.do(scheduler.logging_job)
     schedule.every(args.interval).seconds.do(scheduler.water_job)
+
+    while True:
+        schedule.run_pending()
+        sleep(1)
 
 
 if __name__ == "__main__":
