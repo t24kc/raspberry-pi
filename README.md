@@ -5,7 +5,7 @@ Watering automation system with Raspberry Pi.
 install dependencies packages
 ```zsh
 # install with pip
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 
 # install with pipenv
 $ pipenv install

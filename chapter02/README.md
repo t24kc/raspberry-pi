@@ -4,7 +4,7 @@ Let's start the relay module (switch function).
 # Run
 ## Relay Module
 ```zsh
-$ python relay_module.py --help
+$ python3 relay_module.py --help
 usage: relay_module.py [-h] [-c CHANNEL] [-w WAIT_TIME] [-i INTERVAL]
 
 Relay Module Script
@@ -18,5 +18,5 @@ optional arguments:
   -i INTERVAL, --interval INTERVAL
                         set script interval seconds (default 10 seconds)
 
-$ python relay_module.py -w 5 -i 5
+$ python3 relay_module.py -w 5 -i 5
 ```
