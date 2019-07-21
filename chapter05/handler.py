@@ -27,19 +27,23 @@ class Scheduler(object):
         self._distance_limit = distance_limit
         self._water_turn_on_time = water_turn_on_time
 
-    def job(self):
+    def logging_job(self):
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         distance = self._vl6180x_sensor.get_distance()
         temperature, humidity = self._sht31_sensor.get_temperature_humidity()
-        water_flag = 0
-
-        if distance > self._distance_limit:
-            self._mcp300x.turn_on_water(self._water_turn_on_time)
-            water_flag = 1
+        water_flag = 1 if self.is_water_flag(distance) else 0
 
         values = [current_datetime, round(distance, 1), round(temperature, 1), round(humidity, 1), water_flag]
         print(values)
         self._spread_sheet.append_row(values)
+
+    def water_job(self):
+        distance = self._vl6180x_sensor.get_distance()
+        if self.is_water_flag(distance):
+            self._mcp300x.turn_on_water(self._water_turn_on_time)
+
+    def is_water_flag(self, distance):
+        return distance > self._distance_limit
 
     def turn_off_water(self):
         self._mcp300x.turn_off_water()
@@ -94,7 +98,8 @@ def main():
     spread_sheet.append_row(DEFAULT_COLUMNS)
 
     scheduler = Scheduler(spread_sheet, args.distance_limit, args.water_turn_on_time)
-    schedule.every(args.interval).seconds.do(scheduler.job)
+    schedule.every(args.interval).seconds.do(scheduler.logging_job)
+    schedule.every(args.interval).seconds.do(scheduler.water_job)
 
     try:
         while True:
