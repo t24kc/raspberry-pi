@@ -35,4 +35,3 @@ class MCP300X(object):
 
     def turn_off_water(self):
         GPIO.output(self._channel, 1)
-        GPIO.cleanup()

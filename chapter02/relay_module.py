@@ -17,7 +17,6 @@ def power_on(channel, interval):
     GPIO.output(channel, 0)
     sleep(interval)
     GPIO.output(channel, 1)
-    GPIO.cleanup()
 
 
 def main():
