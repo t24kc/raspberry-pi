@@ -4,13 +4,14 @@ from lib.spread_sheet import SpreadSheet
 from sensor.SHT31 import SHT31
 from sensor.BH1750FVI import BH1750FVI
 from sensor.VL6180 import VL6180X
+from sensor.CCS811 import CCS811
 
 import argparse
 import schedule
 
 DEFAULT_KEY_PATH = "key.json"
 DEFAULT_SHEET_ID = "dummy"
-DEFAULT_COLUMNS = ["Time", "Distance", "Light", "Temperature", "Humidity"]
+DEFAULT_COLUMNS = ["Time", "Distance", "Light", "Temperature", "Humidity", "CO2"]
 DEFAULT_INTERVAL_TIME = 600
 
 
@@ -20,14 +21,24 @@ class Scheduler(object):
         self._vl6180x_sensor = VL6180X()
         self._bh1750fvi_sensor = BH1750FVI()
         self._sht31_sensor = SHT31()
+        self._ccs811_sensor = CCS811()
 
     def job(self):
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         distance = self._vl6180x_sensor.get_distance()
         light = self._bh1750fvi_sensor.get_light()
         temperature, humidity = self._sht31_sensor.get_temperature_humidity()
+        self._ccs811_sensor.read_data()
+        co2 = self._ccs811_sensor.get_co2()
 
-        values = [current_datetime, round(distance, 1), round(light, 1), round(temperature, 1), round(humidity, 1)]
+        values = [
+            current_datetime,
+            round(distance, 1),
+            round(light, 1),
+            round(temperature, 1),
+            round(humidity, 1),
+            round(co2, 1)
+        ]
         print(values)
         self._spread_sheet.append_row(values)
 

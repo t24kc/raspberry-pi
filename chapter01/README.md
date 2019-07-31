@@ -2,12 +2,12 @@
 Let's activate the each sensors.
 
 # Run
-## CO2 and TVOC Sensor
+## CO2 Sensor
 ```zsh
 $ python3 CCS811.py --help
 usage: CCS811.py [-h] [-i INTERVAL]
 
-CO2 and TVOC Sensor Script
+CO2 Sensor Script
 
 optional arguments:
   -h, --help            show this help message and exit

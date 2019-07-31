@@ -1,187 +1,116 @@
-# CO2 and TVOC Sensor
-from collections import OrderedDict
+# CO2 Sensor
 from logging import getLogger
 from time import sleep
 import argparse
-import smbus
+import fcntl
+import threading
+import weakref
 
-ADDRESS = 0x5A
+CO2METER_CO2 = 0x50
+CO2METER_TEMP = 0x42
+CO2METER_HUM = 0x44
+HIDIOCSFEATURE_9 = 0xC0094806
 
-COMMAND_STATUS = 0x00
-COMMAND_MEAS_MODE = 0x01
-COMMAND_ALG_RESULT_DATA = 0x02
-COMMAND_HW_ID = 0x20
-COMMAND_BOOTLOADER_APP_START = 0xF4
 
-HW_ID_CODE = 0x81
-
-DRIVE_MODE_IDLE = 0x00
-DRIVE_MODE_1SEC = 0x01
-DRIVE_MODE_10SEC = 0x02
-DRIVE_MODE_60SEC = 0x03
-DRIVE_MODE_250MS = 0x04
+def _co2_worker(weak_self):
+    while True:
+        self = weak_self()
+        if self is None:
+            break
+        self.read_data()
 
 
 class CCS811(object):
-    def __init__(self, mode=DRIVE_MODE_1SEC, address=ADDRESS):
+    _key = [0xC4, 0xC6, 0xC0, 0x92, 0x40, 0x23, 0xDC, 0x96]
+
+    def __init__(self, device="/dev/hidraw0"):
         self._logger = getLogger(self.__class__.__name__)
+        self._values = {CO2METER_CO2: 0, CO2METER_TEMP: 0, CO2METER_HUM: 0}
+        self._running = True
+        self._file = open(device, "a+b", 0)
 
-        if mode not in [
-            DRIVE_MODE_IDLE,
-            DRIVE_MODE_1SEC,
-            DRIVE_MODE_10SEC,
-            DRIVE_MODE_60SEC,
-            DRIVE_MODE_250MS,
-        ]:
-            raise ValueError(
-                "Unexpected mode value {0}.  Set mode to one of CCS811_DRIVE_MODE_IDLE, CCS811_DRIVE_MODE_1SEC, "
-                "CCS811_DRIVE_MODE_10SEC, CCS811_DRIVE_MODE_60SEC or CCS811_DRIVE_MODE_250MS".format(
-                    mode
-                )
-            )
+        set_report = [0] + self._key
+        fcntl.ioctl(self._file, HIDIOCSFEATURE_9, bytearray(set_report))
 
-        self._address = address
-        self._bus = smbus.SMBus(1)
-
-        self._status = Bitfield(
-            [
-                ("ERROR", 1),
-                ("unused", 2),
-                ("DATA_READY", 1),
-                ("APP_VALID", 1),
-                ("unused2", 2),
-                ("FW_MODE", 1),
-            ]
-        )
-
-        self._meas_mode = Bitfield(
-            [("unused", 2), ("INT_THRESH", 1),
-             ("INT_DATARDY", 1), ("DRIVE_MODE", 3)]
-        )
-
-        self._error_id = Bitfield(
-            [
-                ("WRITE_REG_INVALID", 1),
-                ("READ_REG_INVALID", 1),
-                ("MEASMODE_INVALID", 1),
-                ("MAX_RESISTANCE", 1),
-                ("HEATER_FAULT", 1),
-                ("HEATER_SUPPLY", 1),
-            ]
-        )
-
-        self._TVOC = 0
-        self._eCO2 = 0
-
-        if self.read(COMMAND_HW_ID) != HW_ID_CODE:
-            raise Exception(
-                "Device ID returned is not correct! Please check your wiring."
-            )
-
-        self.write_list(COMMAND_BOOTLOADER_APP_START, [])
-        sleep(0.1)
-
-        if self.check_error():
-            raise Exception(
-                "Device returned an Error! Try removing and reapplying power to the device and running the code again."
-            )
-        if not self._status.FW_MODE:
-            raise Exception(
-                "Device did not enter application mode! If you got here, "
-                "there may be a problem with the firmware on your sensor."
-            )
-
-        self.disable_interrupt()
-        self.set_drive_mode(mode)
+        thread = threading.Thread(
+            target=_co2_worker, args=(weakref.ref(self),))
+        thread.daemon = True
+        thread.start()
 
         self._logger.debug("CCS811 sensor is starting...")
 
-    def disable_interrupt(self):
-        self._meas_mode.INT_DATARDY = 1
-        self.write(COMMAND_MEAS_MODE, self._meas_mode.get())
-
-    def set_drive_mode(self, mode):
-        self._meas_mode.DRIVE_MODE = mode
-        self.write(COMMAND_MEAS_MODE, self._meas_mode.get())
-
-    def available(self):
-        self._status.set(self.read(COMMAND_STATUS))
-        if not self._status.DATA_READY:
-            return False
-        else:
-            return True
-
     def read_data(self):
-        if not self.available():
-            return False
-        else:
-            buf = self.read_list(COMMAND_ALG_RESULT_DATA, 8)
-            self._eCO2 = (buf[0] << 8) | (buf[1])
-            self._TVOC = (buf[2] << 8) | (buf[3])
-            if self._status.ERROR:
-                return buf[5]
+        try:
+            data = list(self._file.read(8))
+
+            decrypted = self._decrypt(data)
+            if decrypted[4] != 0x0D or (sum(decrypted[:3]) & 0xFF) != decrypted[3]:
+                print(self._hd(data), " => ", self._hd(
+                    decrypted), "Checksum error")
             else:
-                return 0
+                operation = decrypted[0]
+                val = decrypted[1] << 8 | decrypted[2]
+                self._values[operation] = val
+            return True
+        except:
+            return False
 
-    def get_tvoc(self):
-        """Get TVOC data from sensor and return it."""
-        return self._TVOC
+    def _decrypt(self, data):
+        cstate = [0x48, 0x74, 0x65, 0x6D, 0x70, 0x39, 0x39, 0x65]
+        shuffle = [2, 4, 0, 7, 1, 6, 5, 3]
 
-    def get_eco2(self):
-        """Get eCO2 data from sensor and return it."""
-        return self._eCO2
+        phase1 = [0] * 8
+        for i, j in enumerate(shuffle):
+            phase1[j] = data[i]
 
-    def check_error(self):
-        self._status.set(self.read(COMMAND_STATUS))
-        return self._status.ERROR
+        phase2 = [0] * 8
+        for i in range(8):
+            phase2[i] = phase1[i] ^ self._key[i]
 
-    def read(self, register):
-        return self._bus.read_byte_data(self._address, register) & 0xFF
+        phase3 = [0] * 8
+        for i in range(8):
+            phase3[i] = ((phase2[i] >> 3) | (
+                phase2[(i - 1 + 8) % 8] << 5)) & 0xFF
 
-    def write(self, register, value):
-        value = value & 0xFF
-        self._bus.write_byte_data(self._address, register, value)
+        ctmp = [0] * 8
+        for i in range(8):
+            ctmp[i] = ((cstate[i] >> 4) | (cstate[i] << 4)) & 0xFF
 
-    def read_list(self, register, length):
-        return self._bus.read_i2c_block_data(
-            self._address, register, length)
+        out = [0] * 8
+        for i in range(8):
+            out[i] = (0x100 + phase3[i] - ctmp[i]) & 0xFF
 
-    def write_list(self, register, data):
-        self._bus.write_i2c_block_data(self._address, register, data)
+        return out
 
+    @staticmethod
+    def _hd(data):
+        return " ".join("%02X" % e for e in data)
 
-class Bitfield(object):
-    def __init__(self, _structure):
-        self._structure = OrderedDict(_structure)
-        for key, value in self._structure.items():
-            setattr(self, key, 0)
+    def get_co2(self):
+        """Get CO2 data from sensor and return it."""
+        return self._values[CO2METER_CO2]
 
-    def get(self):
-        fullreg = 0
-        pos = 0
-        for key, value in self._structure.items():
-            fullreg = fullreg | (
-                (getattr(self, key) & (2 ** value - 1)) << pos)
-            pos = pos + value
+    def get_temperature(self):
+        """Get temperature data from sensor and return it."""
+        return self._values[CO2METER_TEMP] / 16.0 - 273.15
 
-        return fullreg
-
-    def set(self, data):
-        pos = 0
-        for key, value in self._structure.items():
-            setattr(self, key, (data >> pos) & (2 ** value - 1))
-            pos = pos + value
+    def get_humidity(self):
+        """Get humidity data from sensor and return it."""
+        # not implemented by all devices
+        return self._values[CO2METER_HUM] / 100.0
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CO2 and TVOC Sensor Script")
-    parser.add_argument("-i", "--interval", type=int, default=10, help="set script interval seconds")
+    parser = argparse.ArgumentParser(description="CO2 Sensor Script")
+    parser.add_argument(
+        "-i", "--interval", type=int, default=10, help="set script interval seconds"
+    )
     args = parser.parse_args()
 
     sensor = CCS811()
     while True:
         if not sensor.read_data():
-            print("CO2: {} ppm, TVOC: {}".format(sensor.get_eco2(), sensor.get_tvoc()))
+            print("CO2: {} ppm".format(sensor.get_co2()))
         else:
             print("Error!")
         sleep(args.interval)

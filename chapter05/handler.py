@@ -5,13 +5,14 @@ from sensor.SHT31 import SHT31
 from sensor.BH1750FVI import BH1750FVI
 from sensor.VL6180 import VL6180X
 from sensor.MCP300X import MCP300X
+from sensor.CCS811 import CCS811
 
 import argparse
 import schedule
 
 DEFAULT_KEY_PATH = "key.json"
 DEFAULT_SHEET_ID = "dummy"
-DEFAULT_COLUMNS = ["Time", "Distance", "Light", "Temperature", "Humidity", "WaterFlag"]
+DEFAULT_COLUMNS = ["Time", "Distance", "Light", "Temperature", "Humidity", "CO2", "WaterFlag"]
 DEFAULT_INTERVAL_TIME = 600
 DEFAULT_DISTANCE_LIMIT = 50
 DEFAULT_WATER_TURN_ON_TIME = 30
@@ -25,6 +26,7 @@ class Scheduler(object):
         self._bh1750fvi_sensor = BH1750FVI()
         self._sht31_sensor = SHT31()
         self._mcp300x = MCP300X()
+        self._ccs811_sensor = CCS811()
 
         self._distance_limit = distance_limit
         self._water_turn_on_time = water_turn_on_time
@@ -34,6 +36,8 @@ class Scheduler(object):
         distance = self._vl6180x_sensor.get_distance()
         light = self._bh1750fvi_sensor.get_light()
         temperature, humidity = self._sht31_sensor.get_temperature_humidity()
+        self._ccs811_sensor.read_data()
+        co2 = self._ccs811_sensor.get_co2()
         water_flag = 1 if self.is_water_flag(distance) else 0
 
         values = [
@@ -42,6 +46,7 @@ class Scheduler(object):
             round(light, 1),
             round(temperature, 1),
             round(humidity, 1),
+            round(co2, 1),
             water_flag
         ]
         print(values)
