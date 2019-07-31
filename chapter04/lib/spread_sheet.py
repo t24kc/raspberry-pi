@@ -26,4 +26,7 @@ class SpreadSheet(object):
         self._get_client().get_worksheet(index).update_acell(label, value)
 
     def append_row(self, values, index=DEFAULT_SHEET_INDEX):
-        self._get_client().get_worksheet(index).append_row(values)
+        try:
+            self._get_client().get_worksheet(index).append_row(values)
+        except:
+            pass
