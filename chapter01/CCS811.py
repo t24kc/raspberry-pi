@@ -109,7 +109,7 @@ def main():
 
     sensor = CCS811()
     while True:
-        if not sensor.read_data():
+        if sensor.read_data():
             print("CO2: {} ppm".format(sensor.get_co2()))
         else:
             print("Error!")
