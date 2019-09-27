@@ -1,0 +1,35 @@
+scheduler:
+  # 監視する時間間隔(分)
+  monitoring_interval_minutes: 10
+  # サマリーメールの送付時間間隔(日)
+  summary_mail_interval_days: 1
+
+google:
+  # gcp service account
+  key_path: /Users/takashi.suzuki/.gcp/sheet-key.json
+  # スプレッドシートID
+  spread_sheet_id: 10D0c8cK_QUKE-NksiVj_2CFms0JU2lQ8xhBVa42WMJw
+
+sensor:
+  # スイッチオンする積算日射(klux/h)
+  solar_radiation_limit: 23.4
+  # 水を流す時間(秒)
+  water_turn_on_time: 30
+
+alert:
+  # 温度(上限)
+  temperature_upper_limit: 34
+  # 温度(下限)
+  temperature_lower_limit: 6
+  # CO2(上限)
+  co2_upper_limit: 1500
+  # CO2(下限)
+  co2_lower_limit: 300
+  # アラートメールをする異常値継続回数
+  consecutive_time: 3
+
+mail:
+  # アラートメールの送付元
+  from_address: fagri-support@gmail.com
+  # アラートメールの送付先
+  to_address: tk82c.0w@gmail.com
