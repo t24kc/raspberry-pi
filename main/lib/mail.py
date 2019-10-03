@@ -29,8 +29,8 @@ class Mail(object):
         return service
 
     @staticmethod
-    def create_message(to, subject, message_text):
-        message = MIMEText(message_text)
+    def create_message(to, subject, body):
+        message = MIMEText(body)
         message["to"] = to
         message["from"] = "me"
         message["subject"] = subject
@@ -39,13 +39,13 @@ class Mail(object):
         return {"raw": base64.urlsafe_b64encode(byte_msg).decode()}
 
     @staticmethod
-    def create_message_with_image(to, subject, message_text, file_path):
+    def create_message_with_image(to, subject, body, file_path):
         message = MIMEMultipart()
         message["to"] = to
         message["from"] = "me"
         message["subject"] = subject
 
-        msg = MIMEText(message_text)
+        msg = MIMEText(body)
         message.attach(msg)
 
         content_type, encoding = mimetypes.guess_type(file_path)

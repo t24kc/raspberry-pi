@@ -1,7 +1,7 @@
 from datetime import datetime
 from time import sleep
-from lib.spread_sheet import SpreadSheet
 from lib.mail import Mail
+from lib.spread_sheet import SpreadSheet
 from sensor.SHT31 import SHT31
 from sensor.BH1750FVI import BH1750FVI
 from sensor.VL6180 import VL6180X
@@ -27,19 +27,22 @@ class Scheduler(object):
             "temperature": None,
             "humidity": None,
             "co2": None,
-            "alert_remaining": config["alert"]["consecutive_time"],
+            "alert_remaining": None,
         }
 
         self._config = config
+        self._full_alert_remaining()
 
+        self._mail_client = Mail(
+            self._config["google"]["credentials_path"],
+            self._config["google"]["token_path"]
+        )
         self._spread_sheet_client = SpreadSheet(
-            self._config["google"]["key_path"],
+            self._config["google"]["service_account_path"],
             self._config["google"]["spread_sheet_id"],
         )
         if not self._spread_sheet_client.get_label_value("A1"):
             self._spread_sheet_client.append_row(DEFAULT_COLUMNS)
-
-        self._mail_client = Mail(self._config["google"]["key_path"])
 
         self._vl6180x_sensor = VL6180X()
         self._bh1750fvi_sensor = BH1750FVI()
@@ -85,18 +88,57 @@ class Scheduler(object):
             round(self.params["co2"], 1),
             int(self._is_water_flag())
         ]
-        print(values)
         self._spread_sheet_client.append_row(values)
+        print(values)
 
     def _alert_params(self):
-        if self.params["temperature"] < self._config["alert"]["temperature_lower_limit"] \
-                or self._config["alert"]["temperature_upper_limit"] < self.params["temperature"] \
-                or self.params["co2"] < self._config["alert"]["co2_lower_limit"] \
-                or self._config["alert"]["co2_upper_limit"] < self.params["co2"]:
-            self.params["alert_remaining"] -= 1
+        if not self._is_alert_flag():
+            self._full_alert_remaining()
+            return
 
+        self.params["alert_remaining"] -= 1
         if self.params["alert_remaining"] <= 0:
-            pass
+            body = ""
+            if self._is_temperature_upper_limit():
+                body = self._config["mail"]["alert"]["body"]["temperature_upper"].format(self.params["temperature"])
+            elif self._is_temperature_lower_limit():
+                body = self._config["mail"]["alert"]["body"]["temperature_lower"].format(self.params["temperature"])
+            elif self._is_co2_upper_limit():
+                body = self._config["mail"]["alert"]["body"]["co2_upper"].format(self.params["co2"])
+            elif self._is_co2_lower_limit():
+                body = self._config["mail"]["alert"]["body"]["co2_lower"].format(self.params["co2"])
+            self._send_mail(self._config["mail"]["alert"]["subject"], body)
+            self._full_alert_remaining()
+
+    def _send_mail(self, subject, body, image_file=None):
+        if image_file:
+            message = self._mail_client.create_message_with_image(
+                self._config["mail"]["to_address"], subject, body, image_file
+            )
+        else:
+            message = self._mail_client.create_message(
+                self._config["mail"]["to_address"], subject, body
+            )
+        self._mail_client.send_message(message)
+
+    def _full_alert_remaining(self):
+        self.params["alert_remaining"] = self._config["alert"]["consecutive_time"]
+
+    def _is_alert_flag(self):
+        return self._is_temperature_upper_limit() or self._is_temperature_lower_limit() \
+               or self._is_co2_upper_limit() or self._is_co2_lower_limit()
+
+    def _is_temperature_upper_limit(self):
+        return self._config["alert"]["temperature_upper_limit"] < self.params["temperature"]
+
+    def _is_temperature_lower_limit(self):
+        return self.params["temperature"] < self._config["alert"]["temperature_lower_limit"]
+
+    def _is_co2_upper_limit(self):
+        return self._config["alert"]["co2_upper_limit"] < self.params["co2"]
+
+    def _is_co2_lower_limit(self):
+        return self.params["co2"] < self._config["alert"]["co2_lower_limit"]
 
     def _is_water_flag(self):
         return self.params["light_total"] > self._config["sensor"]["solar_radiation_limit"]
