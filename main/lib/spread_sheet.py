@@ -28,5 +28,6 @@ class SpreadSheet(object):
     def append_row(self, values, index=DEFAULT_SHEET_INDEX):
         try:
             self._get_client().get_worksheet(index).append_row(values)
-        except:
+        except Exception as e:
+            print(e)
             pass
