@@ -12,6 +12,10 @@ gspread = "*"
 schedule = "*"
 "RPi.GPIO" = "*"
 oauth2client = "*"
+pyyaml = "*"
+google-api-python-client = "*"
+pandas = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.6"

@@ -4,3 +4,7 @@ spidev
 gspread
 oauth2client
 schedule
+pyyaml
+google-api-python-client
+pandas
+matplotlib
