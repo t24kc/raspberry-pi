@@ -32,8 +32,7 @@ class CCS811(object):
         set_report = [0] + self._key
         fcntl.ioctl(self._file, HIDIOCSFEATURE_9, bytearray(set_report))
 
-        thread = threading.Thread(
-            target=_co2_worker, args=(weakref.ref(self),))
+        thread = threading.Thread(target=_co2_worker, args=(weakref.ref(self),))
         thread.daemon = True
         thread.start()
 
@@ -45,8 +44,7 @@ class CCS811(object):
 
             decrypted = self._decrypt(data)
             if decrypted[4] != 0x0D or (sum(decrypted[:3]) & 0xFF) != decrypted[3]:
-                print(self._hd(data), " => ", self._hd(
-                    decrypted), "Checksum error")
+                print(self._hd(data), " => ", self._hd(decrypted), "Checksum error")
             else:
                 operation = decrypted[0]
                 val = decrypted[1] << 8 | decrypted[2]
@@ -69,8 +67,7 @@ class CCS811(object):
 
         phase3 = [0] * 8
         for i in range(8):
-            phase3[i] = ((phase2[i] >> 3) | (
-                    phase2[(i - 1 + 8) % 8] << 5)) & 0xFF
+            phase3[i] = ((phase2[i] >> 3) | (phase2[(i - 1 + 8) % 8] << 5)) & 0xFF
 
         ctmp = [0] * 8
         for i in range(8):
