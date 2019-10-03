@@ -8,13 +8,21 @@ from sensor.VL6180 import VL6180X
 from sensor.MCP300X import MCP300X
 from sensor.CCS811 import CCS811
 
+import matplotlib.pyplot as plt
 import schedule
 import yaml
 
 DEFAULT_COLUMNS = [
-    "Time", "Distance(mm)", "Light(lux)", "Light(klux/h)",
-    "Temperature(C)", "Humidity(%)", "CO2(ppm)", "WaterFlag"
+    "Time",
+    "Distance(mm)",
+    "Light(lux)",
+    "Light(klux/h)",
+    "Temperature(C)",
+    "Humidity(%)",
+    "CO2(ppm)",
+    "WaterFlag",
 ]
+DEFAULT_DATA_IMAGE_PATH = "data/figure.png"
 
 
 class Scheduler(object):
@@ -35,7 +43,7 @@ class Scheduler(object):
 
         self._mail_client = Mail(
             self._config["google"]["credentials_path"],
-            self._config["google"]["token_path"]
+            self._config["google"]["token_path"],
         )
         self._spread_sheet_client = SpreadSheet(
             self._config["google"]["service_account_path"],
@@ -58,21 +66,44 @@ class Scheduler(object):
             self.turn_on_water()
 
     def mail_job(self):
-        pass
+        dframe = self._spread_sheet_client.get_dataframe(diff_days=7)
+
+        kwargs = {"kind": "line", "use_index": True, "rot": 45}
+        setting_list = [
+            {"title": "Light(lux)", "x": "Time", "y": "Light(lux)"},
+            {"title": "CO2(ppm)", "x": "Time", "y": "CO2(ppm)"},
+            {"title": "Temperature(C)", "x": "Time", "y": "Temperature(C)"},
+            {"title": "Humidity(%)", "x": "Time", "y": "Humidity(%)"},
+        ]
+        fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(20, 15), sharex="col")
+        for ax, setting in zip(axes.ravel(), setting_list):
+            dframe.plot(setting["x"], setting["y"], ax=ax, **kwargs, title=setting["title"])
+
+        plt.savefig(DEFAULT_DATA_IMAGE_PATH)
+        self._send_mail(
+            self._config["mail"]["summary"]["subject"],
+            self._config["mail"]["summary"]["body"],
+            DEFAULT_DATA_IMAGE_PATH
+        )
 
     def _fetch_params(self):
         light = self._bh1750fvi_sensor.get_light()
-        light_klux = light * self._config["scheduler"]["monitoring_interval_minutes"] / 60000
+        light_klux = (
+            light *
+            self._config["scheduler"]["monitoring_interval_minutes"] / 60000
+        )
 
         self._ccs811_sensor.read_data()
-        self.params.update({
-            "distance": self._vl6180x_sensor.get_distance(),
-            "light": light,
-            "light_klux": light_klux,
-            "temperature": self._sht31_sensor.get_temperature(),
-            "humidity": self._sht31_sensor.get_humidity(),
-            "co2": self._ccs811_sensor.get_co2(),
-        })
+        self.params.update(
+            {
+                "distance": self._vl6180x_sensor.get_distance(),
+                "light": light,
+                "light_klux": light_klux,
+                "temperature": self._sht31_sensor.get_temperature(),
+                "humidity": self._sht31_sensor.get_humidity(),
+                "co2": self._ccs811_sensor.get_co2(),
+            }
+        )
         self.params["light_total"] += light_klux
 
     def _logging_params(self):
@@ -86,7 +117,7 @@ class Scheduler(object):
             round(self.params["temperature"], 1),
             round(self.params["humidity"], 1),
             round(self.params["co2"], 1),
-            int(self._is_water_flag())
+            int(self._is_water_flag()),
         ]
         self._spread_sheet_client.append_row(values)
         print(values)
@@ -97,18 +128,28 @@ class Scheduler(object):
             return
 
         self.params["alert_remaining"] -= 1
-        if self.params["alert_remaining"] <= 0:
-            body = ""
-            if self._is_temperature_upper_limit():
-                body = self._config["mail"]["alert"]["body"]["temperature_upper"].format(self.params["temperature"])
-            elif self._is_temperature_lower_limit():
-                body = self._config["mail"]["alert"]["body"]["temperature_lower"].format(self.params["temperature"])
-            elif self._is_co2_upper_limit():
-                body = self._config["mail"]["alert"]["body"]["co2_upper"].format(self.params["co2"])
-            elif self._is_co2_lower_limit():
-                body = self._config["mail"]["alert"]["body"]["co2_lower"].format(self.params["co2"])
-            self._send_mail(self._config["mail"]["alert"]["subject"], body)
-            self._full_alert_remaining()
+        if self.params["alert_remaining"] > 0:
+            return
+
+        body = ""
+        if self._is_temperature_upper_limit():
+            body = self._config["mail"]["alert"]["body"]["temperature_upper"].format(
+                self.params["temperature"]
+            )
+        elif self._is_temperature_lower_limit():
+            body = self._config["mail"]["alert"]["body"]["temperature_lower"].format(
+                self.params["temperature"]
+            )
+        elif self._is_co2_upper_limit():
+            body = self._config["mail"]["alert"]["body"]["co2_upper"].format(
+                self.params["co2"]
+            )
+        elif self._is_co2_lower_limit():
+            body = self._config["mail"]["alert"]["body"]["co2_lower"].format(
+                self.params["co2"]
+            )
+        self._send_mail(self._config["mail"]["alert"]["subject"], body)
+        self._full_alert_remaining()
 
     def _send_mail(self, subject, body, image_file=None):
         if image_file:
@@ -125,14 +166,24 @@ class Scheduler(object):
         self.params["alert_remaining"] = self._config["alert"]["consecutive_time"]
 
     def _is_alert_flag(self):
-        return self._is_temperature_upper_limit() or self._is_temperature_lower_limit() \
-               or self._is_co2_upper_limit() or self._is_co2_lower_limit()
+        return (
+            self._is_temperature_upper_limit()
+            or self._is_temperature_lower_limit()
+            or self._is_co2_upper_limit()
+            or self._is_co2_lower_limit()
+        )
 
     def _is_temperature_upper_limit(self):
-        return self._config["alert"]["temperature_upper_limit"] < self.params["temperature"]
+        return (
+            self._config["alert"]["temperature_upper_limit"]
+            < self.params["temperature"]
+        )
 
     def _is_temperature_lower_limit(self):
-        return self.params["temperature"] < self._config["alert"]["temperature_lower_limit"]
+        return (
+            self.params["temperature"]
+            < self._config["alert"]["temperature_lower_limit"]
+        )
 
     def _is_co2_upper_limit(self):
         return self._config["alert"]["co2_upper_limit"] < self.params["co2"]
@@ -141,11 +192,14 @@ class Scheduler(object):
         return self.params["co2"] < self._config["alert"]["co2_lower_limit"]
 
     def _is_water_flag(self):
-        return self.params["light_total"] > self._config["sensor"]["solar_radiation_limit"]
+        return (
+            self.params["light_total"] > self._config["sensor"]["solar_radiation_limit"]
+        )
 
     def turn_on_water(self):
         self.params["light_total"] = 0
-        self._mcp300x.turn_on_water(self._config["sensor"]["water_turn_on_time"])
+        self._mcp300x.turn_on_water(
+            self._config["sensor"]["water_turn_on_time"])
 
     def turn_off_water(self):
         self._mcp300x.turn_off_water()
@@ -156,8 +210,12 @@ def main():
         config = yaml.full_load(file)
 
     scheduler = Scheduler(config)
-    schedule.every(config["scheduler"]["monitoring_interval_minutes"]).minutes.do(scheduler.monitoring_job)
-    schedule.every(config["scheduler"]["summary_mail_interval_days"]).days.do(scheduler.mail_job)
+    schedule.every(config["scheduler"]["monitoring_interval_minutes"]).minutes.do(
+        scheduler.monitoring_job
+    )
+    schedule.every(config["scheduler"]["summary_mail_interval_days"]).days.do(
+        scheduler.mail_job
+    )
 
     try:
         while True:
