@@ -1,0 +1,47 @@
+scheduler:
+  # 監視する時間間隔(分)
+  monitoring_interval_minutes: 10
+  # サマリーメールの送付時間間隔(日)
+  summary_mail_interval_days: 1
+
+google:
+  # service account path
+  service_account_path: ../.gcp/service_account.json
+  # credentials path
+  credentials_path: ../.gcp/credentials.json
+  # token path
+  token_path: ../.gcp/token.json
+  # スプレッドシートID
+  spread_sheet_id: # TODO update
+
+sensor:
+  # スイッチオンする積算日射(klux/h)
+  solar_radiation_limit: 23.4
+  # 水を流す時間(秒)
+  water_turn_on_time: 30
+
+alert:
+  # 温度(上限)
+  temperature_upper_limit: 34
+  # 温度(下限)
+  temperature_lower_limit: 6
+  # CO2(上限)
+  co2_upper_limit: 1500
+  # CO2(下限)
+  co2_lower_limit: 300
+  # アラートメールをする異常値継続回数
+  consecutive_time: 3
+
+mail:
+  # アラートメールの送付先
+  to_address: # TODO update
+  alert:
+    subject: "【アラート】IOTセンサー"
+    body:
+      temperature_upper: "設定した温度を上回りました（現在：{}度）"
+      temperature_lower: "設定した温度を下回りました（現在：{}度）"
+      co2_upper: "設定したCO2を上回りました（現在：{}ppm）"
+      co2_lower: "設定したCO2を下回りました（現在：{}ppm）"
+  summary:
+    subject: "【サマリー】IOTセンサー"
+    body: "1週間のIOTセンサーのサマリーデータとなります"
