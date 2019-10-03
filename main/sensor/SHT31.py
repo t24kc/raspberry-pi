@@ -42,8 +42,7 @@ class SHT31(object):
         return self._bus.read_byte_data(self._address, register) & 0xFF
 
     def read_list(self, register, length):
-        return self._bus.read_i2c_block_data(
-            self._address, register, length)
+        return self._bus.read_i2c_block_data(self._address, register, length)
 
     def write(self, register, value):
         value = value & 0xFF
@@ -54,8 +53,12 @@ class SHT31(object):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Temperature and Humidity Sensor Script")
-    parser.add_argument("-i", "--interval", type=int, default=10, help="set script interval seconds")
+    parser = argparse.ArgumentParser(
+        description="Temperature and Humidity Sensor Script"
+    )
+    parser.add_argument(
+        "-i", "--interval", type=int, default=10, help="set script interval seconds"
+    )
     args = parser.parse_args()
 
     sensor = SHT31()

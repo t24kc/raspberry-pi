@@ -57,7 +57,9 @@ class Mail(object):
         with open(file_path, "rb") as fp:
             msg = MIMEImage(fp.read(), _subtype=sub_type)
 
-        msg.add_header("Content-Disposition", "attachment", filename=os.path.basename(file_path))
+        msg.add_header(
+            "Content-Disposition", "attachment", filename=os.path.basename(file_path)
+        )
         message.attach(msg)
 
         byte_msg = message.as_string().encode()

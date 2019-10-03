@@ -19,7 +19,8 @@ class SpreadSheet(object):
 
     def _get_client(self):
         credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            self._key_path, SCOPES)
+            self._key_path, SCOPES
+        )
         return gspread.authorize(credentials).open_by_key(self._spread_sheet_id)
 
     def get_label_value(self, label, index=DEFAULT_SHEET_INDEX):
@@ -53,11 +54,20 @@ class SpreadSheet(object):
         dframe = pd.DataFrame(self.get_all_values(index))
         dframe.columns = list(dframe.iloc[0])
         dframe.drop(0, axis=0, inplace=True)
-        dframe = dframe.astype({
-            "Time": "datetime64[ns]", "Distance(mm)": float, "Light(lux)": float,
-            "Light(klux/h)": float, "Temperature(C)": float, "Humidity(%)": float,
-            "CO2(ppm)": float, "WaterFlag": int
-        })
+        dframe = dframe.astype(
+            {
+                "Time": "datetime64[ns]",
+                "Distance(mm)": float,
+                "Light(lux)": float,
+                "Light(klux/h)": float,
+                "Temperature(C)": float,
+                "Humidity(%)": float,
+                "CO2(ppm)": float,
+                "WaterFlag": int,
+            }
+        )
 
-        target_date = (datetime.now() - timedelta(days=diff_days)).strftime("%Y-%m-%d %H:%M:%S")
+        target_date = (datetime.now() - timedelta(days=diff_days)).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
         return dframe.query("Time > '{}'".format(target_date)).reset_index(drop=True)

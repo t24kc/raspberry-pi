@@ -75,15 +75,18 @@ class Scheduler(object):
             {"title": "Temperature(C)", "x": "Time", "y": "Temperature(C)"},
             {"title": "Humidity(%)", "x": "Time", "y": "Humidity(%)"},
         ]
-        fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(20, 15), sharex="col")
+        fig, axes = plt.subplots(
+            ncols=2, nrows=2, figsize=(20, 15), sharex="col")
         for ax, setting in zip(axes.ravel(), setting_list):
-            dframe.plot(setting["x"], setting["y"], ax=ax, **kwargs, title=setting["title"])
+            dframe.plot(
+                setting["x"], setting["y"], ax=ax, **kwargs, title=setting["title"]
+            )
 
         plt.savefig(DEFAULT_DATA_IMAGE_PATH)
         self._send_mail(
             self._config["mail"]["summary"]["subject"],
             self._config["mail"]["summary"]["body"],
-            DEFAULT_DATA_IMAGE_PATH
+            DEFAULT_DATA_IMAGE_PATH,
         )
 
     def _fetch_params(self):
