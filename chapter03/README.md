@@ -8,7 +8,7 @@ Let's write to GoogleSpreadSheet.
 # create service account
 https://cloud.google.com/iam/docs/creating-managing-service-accounts
 # set gcp path
-$ copy key.json ../.gcp/key.json
+$ mv key.json ../.gcp/key.json
 # enable sheet api
 https://cloud.google.com/apis/docs/enable-disable-apis
 ```
