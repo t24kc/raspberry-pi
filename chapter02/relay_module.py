@@ -9,17 +9,18 @@ DEFAULT_INTERVAL_TIME = 10
 
 
 class Scheduler(object):
-    def __init__(self, channel):
+    def __init__(self, channel, interval):
         self._channel = channel
+        self._interval = interval
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BOARD)
 
-    def power_on_and_off(self, interval):
+    def power_on_and_off(self):
         GPIO.setup(self._channel, GPIO.OUT)
         GPIO.output(self._channel, 0)
-        sleep(interval)
+        sleep(self._interval)
         self.power_off()
-        sleep(interval)
+        sleep(self._interval)
 
     def power_off(self):
         GPIO.output(self._channel, 1)
@@ -54,7 +55,7 @@ def main():
     args = parser.parse_args()
 
     scheduler = Scheduler(args.channel)
-    schedule.every(args.wait_time).seconds.do(scheduler.power_on_and_off(args.interval))
+    schedule.every(args.wait_time).seconds.do(scheduler.power_on_and_off)
 
     try:
         while True:
