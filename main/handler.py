@@ -5,8 +5,8 @@ from lib.spread_sheet import SpreadSheet
 from sensor.SHT31 import SHT31
 from sensor.BH1750FVI import BH1750FVI
 from sensor.VL6180 import VL6180X
-from sensor.MCP300X import MCP300X
-from sensor.CCS811 import CCS811
+from sensor.CO2MINI import CO2MINI
+from sensor.relay_module import RelayModule
 
 import matplotlib.pyplot as plt
 import schedule
@@ -55,8 +55,8 @@ class Scheduler(object):
         self._vl6180x_sensor = VL6180X()
         self._bh1750fvi_sensor = BH1750FVI()
         self._sht31_sensor = SHT31()
-        self._mcp300x = MCP300X()
-        self._ccs811_sensor = CCS811()
+        self._relay_module = RelayModule()
+        self._co2mini_sensor = CO2MINI()
 
     def monitoring_job(self):
         self._fetch_params()
@@ -96,7 +96,7 @@ class Scheduler(object):
             self._config["scheduler"]["monitoring_interval_minutes"] / 60000
         )
 
-        self._ccs811_sensor.read_data()
+        self._co2mini_sensor.read_data()
         self.params.update(
             {
                 "distance": self._vl6180x_sensor.get_distance(),
@@ -104,7 +104,7 @@ class Scheduler(object):
                 "light_klux": light_klux,
                 "temperature": self._sht31_sensor.get_temperature(),
                 "humidity": self._sht31_sensor.get_humidity(),
-                "co2": self._ccs811_sensor.get_co2(),
+                "co2": self._co2mini_sensor.get_co2(),
             }
         )
         self.params["light_total"] += light_klux
@@ -201,11 +201,11 @@ class Scheduler(object):
 
     def turn_on_water(self):
         self.params["light_total"] = 0
-        self._mcp300x.turn_on_water(
+        self._relay_module.turn_on_water(
             self._config["sensor"]["water_turn_on_time"])
 
     def turn_off_water(self):
-        self._mcp300x.turn_off_water()
+        self._relay_module.turn_off_water()
 
 
 def main():

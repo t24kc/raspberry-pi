@@ -4,8 +4,8 @@ from lib.spread_sheet import SpreadSheet
 from sensor.SHT31 import SHT31
 from sensor.BH1750FVI import BH1750FVI
 from sensor.VL6180 import VL6180X
-from sensor.MCP300X import MCP300X
-from sensor.CCS811 import CCS811
+from sensor.CO2MINI import CO2MINI
+from sensor.relay_module import RelayModule
 
 import argparse
 import schedule
@@ -25,8 +25,8 @@ class Scheduler(object):
         self._vl6180x_sensor = VL6180X()
         self._bh1750fvi_sensor = BH1750FVI()
         self._sht31_sensor = SHT31()
-        self._mcp300x = MCP300X()
-        self._ccs811_sensor = CCS811()
+        self._co2mini_sensor = CO2MINI()
+        self._relay_module = RelayModule()
 
         self._distance_limit = distance_limit
         self._water_turn_on_time = water_turn_on_time
@@ -36,8 +36,8 @@ class Scheduler(object):
         distance = self._vl6180x_sensor.get_distance()
         light = self._bh1750fvi_sensor.get_light()
         temperature, humidity = self._sht31_sensor.get_temperature_humidity()
-        self._ccs811_sensor.read_data()
-        co2 = self._ccs811_sensor.get_co2()
+        self._co2mini_sensor.read_data()
+        co2 = self._co2mini_sensor.get_co2()
         water_flag = 1 if self.is_water_flag(distance) else 0
 
         values = [
@@ -55,13 +55,13 @@ class Scheduler(object):
     def water_job(self):
         distance = self._vl6180x_sensor.get_distance()
         if self.is_water_flag(distance):
-            self._mcp300x.turn_on_water(self._water_turn_on_time)
+            self._relay_module.turn_on_water(self._water_turn_on_time)
 
     def is_water_flag(self, distance):
         return distance > self._distance_limit
 
     def turn_off_water(self):
-        self._mcp300x.turn_off_water()
+        self._relay_module.turn_off_water()
 
 
 def main():

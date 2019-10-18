@@ -4,8 +4,8 @@ Let's activate the each sensors.
 # Run
 ## CO2 Sensor
 ```zsh
-$ python3 CCS811.py --help
-usage: CCS811.py [-h] [-i INTERVAL]
+$ python3 CO2MINI.py --help
+usage: CO2MINI.py [-h] [-i INTERVAL]
 
 CO2 Sensor Script
 
@@ -14,7 +14,7 @@ optional arguments:
   -i INTERVAL, --interval INTERVAL
                         set script interval seconds
 
-$ python3 CCS811.py -i 5
+$ python3 CO2MINI.py -i 5
 ```
 
 ## Infrared Distance Sensor

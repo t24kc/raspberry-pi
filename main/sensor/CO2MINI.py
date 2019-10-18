@@ -20,7 +20,7 @@ def _co2_worker(weak_self):
         self.read_data()
 
 
-class CCS811(object):
+class CO2MINI(object):
     _key = [0xC4, 0xC6, 0xC0, 0x92, 0x40, 0x23, 0xDC, 0x96]
 
     def __init__(self, device="/dev/hidraw0"):
@@ -36,7 +36,7 @@ class CCS811(object):
         thread.daemon = True
         thread.start()
 
-        self._logger.debug("CCS811 sensor is starting...")
+        self._logger.debug("CO2MINI sensor is starting...")
 
     def read_data(self):
         try:
@@ -104,7 +104,7 @@ def main():
     )
     args = parser.parse_args()
 
-    sensor = CCS811()
+    sensor = CO2MINI()
     while True:
         if sensor.read_data():
             print("CO2: {} ppm".format(sensor.get_co2()))
