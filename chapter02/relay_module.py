@@ -54,7 +54,7 @@ def main():
     )
     args = parser.parse_args()
 
-    scheduler = Scheduler(args.channel)
+    scheduler = Scheduler(args.channel, args.interval)
     schedule.every(args.wait_time).seconds.do(scheduler.power_on_and_off)
 
     try:
