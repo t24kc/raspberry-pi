@@ -1,22 +1,28 @@
 from time import sleep
 import RPi.GPIO as GPIO
 import argparse
+import schedule
 
 DEFAULT_CHANNEL = 7
 DEFAULT_WAIT_TIME = 3
 DEFAULT_INTERVAL_TIME = 10
 
 
-def init():
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BOARD)
+class Scheduler(object):
+    def __init__(self, channel):
+        self._channel = channel
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BOARD)
 
+    def power_on_and_off(self, interval):
+        GPIO.setup(self._channel, GPIO.OUT)
+        GPIO.output(self._channel, 0)
+        sleep(interval)
+        self.power_off()
+        sleep(interval)
 
-def power_on(channel, interval):
-    GPIO.setup(channel, GPIO.OUT)
-    GPIO.output(channel, 0)
-    sleep(interval)
-    GPIO.output(channel, 1)
+    def power_off(self):
+        GPIO.output(self._channel, 1)
 
 
 def main():
@@ -47,9 +53,16 @@ def main():
     )
     args = parser.parse_args()
 
-    init()
-    sleep(args.wait_time)
-    power_on(args.channel, args.interval)
+    scheduler = Scheduler(args.channel)
+    schedule.every(args.wait_time).seconds.do(scheduler.power_on_and_off)
+
+    try:
+        while True:
+            schedule.run_pending()
+            sleep(1)
+    except KeyboardInterrupt:
+        scheduler.power_off()
+        pass
 
 
 if __name__ == "__main__":
