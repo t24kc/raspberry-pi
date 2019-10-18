@@ -201,11 +201,15 @@ class Scheduler(object):
 
     def turn_on_water(self):
         self.params["light_total"] = 0
+        self._relay_module.setup()
         self._relay_module.turn_on_water(
             self._config["sensor"]["water_turn_on_time"])
 
     def turn_off_water(self):
         self._relay_module.turn_off_water()
+
+    def cleanup(self):
+        self._relay_module.cleanup()
 
 
 def main():
@@ -225,7 +229,7 @@ def main():
             schedule.run_pending()
             sleep(1)
     except KeyboardInterrupt:
-        scheduler.turn_off_water()
+        scheduler.cleanup()
         pass
 
 

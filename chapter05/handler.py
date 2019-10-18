@@ -55,6 +55,7 @@ class Scheduler(object):
     def water_job(self):
         distance = self._vl6180x_sensor.get_distance()
         if self.is_water_flag(distance):
+            self._relay_module.setup()
             self._relay_module.turn_on_water(self._water_turn_on_time)
 
     def is_water_flag(self, distance):
@@ -62,6 +63,9 @@ class Scheduler(object):
 
     def turn_off_water(self):
         self._relay_module.turn_off_water()
+
+    def cleanup(self):
+        self._relay_module.cleanup()
 
 
 def main():
@@ -121,7 +125,7 @@ def main():
             schedule.run_pending()
             sleep(1)
     except KeyboardInterrupt:
-        scheduler.turn_off_water()
+        scheduler.cleanup()
         pass
 
 

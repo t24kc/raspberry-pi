@@ -12,18 +12,25 @@ class Scheduler(object):
     def __init__(self, channel, interval):
         self._channel = channel
         self._interval = interval
+
+    def setup(self):
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(self._channel, GPIO.OUT)
 
     def power_on_and_off(self):
-        GPIO.setup(self._channel, GPIO.OUT)
+        self.setup()
         GPIO.output(self._channel, 0)
         sleep(self._interval)
-        self.power_off()
+        self.cleanup()
         sleep(self._interval)
 
     def power_off(self):
         GPIO.output(self._channel, 1)
+
+    @staticmethod
+    def cleanup():
+        GPIO.cleanup()
 
 
 def main():
@@ -62,7 +69,7 @@ def main():
             schedule.run_pending()
             sleep(1)
     except KeyboardInterrupt:
-        scheduler.power_off()
+        scheduler.cleanup()
         pass
 
 
